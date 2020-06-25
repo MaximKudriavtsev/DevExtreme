@@ -6,7 +6,6 @@ import { extend } from 'core/utils/extend';
 import ExcelJS from 'exceljs';
 import { ExcelJSPivotGridTestHelper } from './ExcelJSTestHelper.js';
 import { exportPivotGrid } from 'excel_exporter';
-import { /* MAX_EXCEL_COLUMN_WIDTH, */ _getFullOptions } from 'exporter/exceljs/export_pivot_grid';
 import { initializeDxObjectAssign, clearDxObjectAssign } from './objectAssignHelper.js';
 import { initializeDxArrayFind, clearDxArrayFind } from './arrayFindHelper.js';
 import ExcelJSLocalizationFormatTests from './exceljs.format.tests.js';
@@ -16,6 +15,8 @@ import 'ui/pivot_grid/ui.pivot_grid';
 
 import 'common.css!';
 import 'generic_light.css!';
+
+import { DataController } from 'ui/pivot_grid/ui.pivot_grid.data_controller.js';
 
 let helper;
 
@@ -1519,26 +1520,26 @@ QUnit.module('Scenarios', moduleConfig, () => {
         { type: 'currency', precision: 2, expectedFormat: '$#,##0.00_);\\($#,##0.00\\)', expectedText: '$1.00' },
         { type: 'currency', precision: 4, expectedFormat: '$#,##0.0000_);\\($#,##0.0000\\)', expectedText: '$1.0000' },
         { type: 'currency', precision: 5, expectedFormat: '$#,##0.00000_);\\($#,##0.00000\\)', expectedText: '$1.00000' },
-        { type: 'trillions', expectedFormat: '#,##0,,,,T', expectedText: '0T' },
-        { type: 'trillions', precision: 0, expectedFormat: '#,##0,,,,T', expectedText: '0T' },
-        { type: 'trillions', precision: 1, expectedFormat: '#,##0.0,,,,T', expectedText: '0.0T' },
-        { type: 'trillions', precision: 3, expectedFormat: '#,##0.000,,,,T', expectedText: '0.000T' },
-        { type: 'trillions', precision: 6, expectedFormat: '#,##0.000000,,,,T', expectedText: '0.000000T' },
-        { type: 'billions', expectedFormat: '#,##0,,,B', expectedText: '0B' },
-        { type: 'billions', precision: 0, expectedFormat: '#,##0,,,B', expectedText: '0B' },
-        { type: 'billions', precision: 1, expectedFormat: '#,##0.0,,,B', expectedText: '0.0B' },
-        { type: 'billions', precision: 3, expectedFormat: '#,##0.000,,,B', expectedText: '0.000B' },
-        { type: 'billions', precision: 6, expectedFormat: '#,##0.000000,,,B', expectedText: '0.000000B' },
-        { type: 'millions', expectedFormat: '#,##0,,M', expectedText: '0M' },
-        { type: 'millions', precision: 0, expectedFormat: '#,##0,,M', expectedText: '0M' },
-        { type: 'millions', precision: 1, expectedFormat: '#,##0.0,,M', expectedText: '0.0M' },
-        { type: 'millions', precision: 3, expectedFormat: '#,##0.000,,M', expectedText: '0.000M' },
-        { type: 'millions', precision: 6, expectedFormat: '#,##0.000000,,M', expectedText: '0.000001M' },
-        { type: 'thousands', expectedFormat: '#,##0,K', expectedText: '0K' },
-        { type: 'thousands', precision: 0, expectedFormat: '#,##0,K', expectedText: '0K' },
-        { type: 'thousands', precision: 1, expectedFormat: '#,##0.0,K', expectedText: '0.0K' },
-        { type: 'thousands', precision: 3, expectedFormat: '#,##0.000,K', expectedText: '0.001K' },
-        { type: 'thousands', precision: 6, expectedFormat: '#,##0.000000,K', expectedText: '0.001000K' },
+        { type: 'trillions', expectedFormat: '#,##0,,,,"T"', expectedText: '0T' },
+        { type: 'trillions', precision: 0, expectedFormat: '#,##0,,,,"T"', expectedText: '0T' },
+        { type: 'trillions', precision: 1, expectedFormat: '#,##0.0,,,,"T"', expectedText: '0.0T' },
+        { type: 'trillions', precision: 3, expectedFormat: '#,##0.000,,,,"T"', expectedText: '0.000T' },
+        { type: 'trillions', precision: 6, expectedFormat: '#,##0.000000,,,,"T"', expectedText: '0.000000T' },
+        { type: 'billions', expectedFormat: '#,##0,,,"B"', expectedText: '0B' },
+        { type: 'billions', precision: 0, expectedFormat: '#,##0,,,"B"', expectedText: '0B' },
+        { type: 'billions', precision: 1, expectedFormat: '#,##0.0,,,"B"', expectedText: '0.0B' },
+        { type: 'billions', precision: 3, expectedFormat: '#,##0.000,,,"B"', expectedText: '0.000B' },
+        { type: 'billions', precision: 6, expectedFormat: '#,##0.000000,,,"B"', expectedText: '0.000000B' },
+        { type: 'millions', expectedFormat: '#,##0,,"M"', expectedText: '0M' },
+        { type: 'millions', precision: 0, expectedFormat: '#,##0,,"M"', expectedText: '0M' },
+        { type: 'millions', precision: 1, expectedFormat: '#,##0.0,,"M"', expectedText: '0.0M' },
+        { type: 'millions', precision: 3, expectedFormat: '#,##0.000,,"M"', expectedText: '0.000M' },
+        { type: 'millions', precision: 6, expectedFormat: '#,##0.000000,,"M"', expectedText: '0.000001M' },
+        { type: 'thousands', expectedFormat: '#,##0,"K"', expectedText: '0K' },
+        { type: 'thousands', precision: 0, expectedFormat: '#,##0,"K"', expectedText: '0K' },
+        { type: 'thousands', precision: 1, expectedFormat: '#,##0.0,"K"', expectedText: '0.0K' },
+        { type: 'thousands', precision: 3, expectedFormat: '#,##0.000,"K"', expectedText: '0.001K' },
+        { type: 'thousands', precision: 6, expectedFormat: '#,##0.000000,"K"', expectedText: '0.001000K' },
         { type: 'largeNumber', expectedFormat: undefined, expectedText: '1' },
         { type: 'largeNumber', precision: 0, expectedFormat: undefined, expectedText: '1' },
         { type: 'largeNumber', precision: 1, expectedFormat: undefined, expectedText: '1.0' },
@@ -1612,6 +1613,92 @@ QUnit.module('Scenarios', moduleConfig, () => {
                 helper.checkAutoFilter(false, { from: topLeft, to: topLeft }, { state: 'frozen', ySplit: topLeft.row, xSplit: topLeft.column });
                 helper.checkCellRange(cellRange, { row: 2, column: 2 }, topLeft);
                 done();
+            });
+        });
+    });
+
+    [
+        { format: 'millisecond', expectedFormat: '[$-9]SSS', expectedText: '009' },
+        { format: 'second', expectedFormat: '[$-9]ss', expectedText: '09' },
+        { format: 'minute', expectedFormat: '[$-9]mm', expectedText: '09' },
+        { format: 'hour', expectedFormat: '[$-9]HH', expectedText: '09' },
+        { format: 'day', expectedFormat: '[$-9]d', expectedText: '9' },
+        { format: 'month', expectedFormat: '[$-9]MMMM', expectedText: 'October' },
+        { format: 'year', expectedFormat: '[$-9]yyyy', expectedText: '2019' },
+        { format: 'quarter', expectedFormat: '[$-9]\\QM', expectedText: 'Q4' },
+        { format: 'monthAndDay', expectedFormat: '[$-9]MMMM d', expectedText: 'October 9' },
+        { format: 'monthAndYear', expectedFormat: '[$-9]MMMM yyyy', expectedText: 'October 2019' },
+        { format: 'quarterAndYear', expectedFormat: '[$-9]\\QM yyyy', expectedText: 'Q4 2019' },
+        { format: 'shortDate', expectedFormat: '[$-9]M\\/d\\/yyyy', expectedText: '10/9/2019' },
+        { format: 'shortTime', expectedFormat: '[$-9]H:mm AM/PM', expectedText: '9:09 AM' },
+        { format: 'longDateLongTime', expectedFormat: '[$-9]dddd, MMMM d, yyyy, H:mm:ss AM/PM', expectedText: 'Wednesday, October 9, 2019, 9:09:09 AM' },
+        { format: 'shotDateShortTime', expectedFormat: '[$-9]ssAM/PMSS\\o\\r\\t\\T\\im\\e', expectedText: '99otDAMte09ortTi9e' },
+        { format: 'longDate', expectedFormat: '[$-9]dddd, MMMM d, yyyy', expectedText: 'Wednesday, October 9, 2019' },
+        { format: 'longTime', expectedFormat: '[$-9]H:mm:ss AM/PM', expectedText: '9:09:09 AM' },
+        { format: 'dayOfWeek', expectedFormat: '[$-9]dddd', expectedText: 'Wednesday' },
+        { format: 'yyyy-MM-dd', expectedFormat: '[$-9]yyyy-MM-dd', expectedText: '2019-10-09' }
+    ].forEach((format)=> {
+        const dateValue = new Date(2019, 9, 9, 9, 9, 9, 9);
+
+        [
+            { value: dateValue, expectedPivotCellValue: dateValue, expectedExcelCellValue: new Date(Date.UTC(2019, 9, 9, 9, 9, 9, 9)) },
+            { value: '2019-10-09T00:00:00', expectedPivotCellValue: new Date(2019, 9, 9), expectedExcelCellValue: new Date(Date.UTC(2019, 9, 9)) },
+            { value: '2019/10/9', expectedPivotCellValue: new Date(2019, 9, 9), expectedExcelCellValue: new Date(Date.UTC(2019, 9, 9)) },
+            { value: dateValue.getTime(), expectedPivotCellValue: dateValue, expectedExcelCellValue: new Date(Date.UTC(2019, 9, 9, 9, 9, 9, 9)) }
+        ].forEach((date) => {
+            QUnit.test(`Export [string x string x number] with date format '${format.format}', cell.value: ${JSON.stringify(date.value)}`, function(assert) {
+                const done = assert.async();
+
+                const ds = {
+                    fields: [
+                        { area: 'row', groupName: null, dataField: 'row1', dataType: 'date', format: format.format },
+                        { area: 'column', groupName: null, dataField: 'col1', dataType: 'date', format: format.format },
+                        { area: 'data', summaryType: 'max', dataField: 'date', dataType: 'date', format: format.format }
+                    ],
+                    store: [
+                        { row1: date.value, col1: date.value, date: date.value }
+                    ]
+                };
+
+                const pivotGrid = $('#pivotGrid').dxPivotGrid({
+                    showColumnGrandTotals: false,
+                    showRowGrandTotals: false,
+                    dataSource: ds
+                }).dxPivotGrid('instance');
+
+                let text = format.expectedText;
+                if(date.value === '2019/10/9' || date.value === '2019-10-09T00:00:00') {
+                    if(format.format === 'millisecond') text = '000';
+                    if(format.format === 'second' || format.format === 'minute' || format.format === 'hour') text = '00';
+                    if(format.format === 'shortTime' || format.format === 'longTime') text = '12:00 AM';
+                    if(format.format === 'longDateLongTime') text = 'Wednesday, October 9, 2019, 12:00:00 AM';
+                    if(format.format === 'shotDateShortTime') text = '012otDAMte012ortTi0e';
+                    if(format.format === 'longTime') text = '12:00:00 AM';
+                }
+
+                const expectedCells = [[
+                    { excelCell: { value: '', type: ExcelJS.ValueType.String, dataType: 'string', alignment: alignCenterTopWrap }, pivotCell: { alignment: 'left', colspan: 1, rowspan: 1, text: '', width: 100 } },
+                    { excelCell: { value: text, type: ExcelJS.ValueType.String, dataType: 'string', alignment: alignCenterTopWrap }, pivotCell: { area: 'column', colspan: 1, dataSourceIndex: 1, isLast: true, path: [new Date(date.value).toString()], rowspan: 1, text: text, type: 'D', width: 100, value: date.expectedPivotCellValue } }
+                ], [
+                    { excelCell: { value: text, type: ExcelJS.ValueType.String, dataType: 'string', alignment: alignLeftTopWrap }, pivotCell: { area: 'row', colspan: 1, dataSourceIndex: 1, isLast: true, path: [new Date(date.value).toString()], rowspan: 1, text: text, type: 'D', value: date.expectedPivotCellValue } },
+                    { excelCell: { value: date.expectedExcelCellValue, type: ExcelJS.ValueType.Date, dataType: 'object', numberFormat: format.expectedFormat, alignment: alignRightTopWrap }, pivotCell: { area: 'data', colspan: 1, columnPath: [new Date(date.value).toString()], columnType: 'D', dataIndex: 0, dataType: 'date', format: format.format, rowPath: [new Date(date.value).toString()], rowType: 'D', rowspan: 1, value: date.expectedPivotCellValue, text: text } }
+                ]];
+
+                helper.extendExpectedCells(expectedCells, topLeft);
+
+                exportPivotGrid(getOptions(this, pivotGrid, expectedCells)).then((cellRange) => {
+                    helper.checkRowAndColumnCount({ row: 2, column: 2 }, { row: 2, column: 2 }, topLeft);
+                    helper.checkColumnWidths([excelColumnWidthFromColumn100Pixels, excelColumnWidthFromColumn100Pixels], topLeft.column);
+                    helper.checkFont(expectedCells);
+                    helper.checkAlignment(expectedCells);
+                    helper.checkValues(expectedCells);
+                    helper.checkCellFormat(expectedCells);
+                    helper.checkMergeCells(expectedCells, topLeft);
+                    helper.checkOutlineLevel([0, 0, 0], topLeft.row);
+                    helper.checkAutoFilter(false, { from: topLeft, to: topLeft }, { state: 'frozen', ySplit: topLeft.row, xSplit: topLeft.column });
+                    helper.checkCellRange(cellRange, { row: 2, column: 2 }, topLeft);
+                    done();
+                });
             });
         });
     });
@@ -1832,6 +1919,8 @@ QUnit.module('Scenarios', moduleConfig, () => {
 
 // TODO: Do I add the shared part for these tests?
 QUnit.module('_getFullOptions', moduleConfig, () => {
+    const _getFullOptions = exportPivotGrid.__internals._getFullOptions;
+
     QUnit.test('topLeftCell', function(assert) {
         assert.deepEqual(_getFullOptions({}).topLeftCell, { row: 1, column: 1 }, 'no member');
         assert.deepEqual(_getFullOptions({ topLeftCell: undefined }).topLeftCell, { row: 1, column: 1 }, 'undefined');
@@ -1872,6 +1961,89 @@ QUnit.module('_getFullOptions', moduleConfig, () => {
 
         assert.deepEqual(_getFullOptions({ loadPanel: { enabled: false } }).loadPanel, { enabled: false, text: defaultLoadPanel.text }, '{ enabled: false } }');
         assert.deepEqual(_getFullOptions({ loadPanel: { enabled: false, text: 'my text' } }).loadPanel, { enabled: false, text: 'my text' }, '{ enabled: false, text: my text } }');
+    });
+});
+
+QUnit.module('Text customization', moduleConfig, () => {
+    QUnit.test('noData text', function(assert) {
+        const pivotGrid = $('#pivotGrid').dxPivotGrid({
+            texts: { noData: 'any text' },
+            dataSource: {
+                store: [ ]
+            }
+        }).dxPivotGrid('instance');
+
+        const done = assert.async();
+        exportPivotGrid({ component: pivotGrid, worksheet: this.worksheet }).then(() => {
+            assert.equal(this.worksheet.getCell('B2').value, null);
+            done();
+        });
+    });
+
+    ['!©¢£µÂÑßŘ ŤŮ   Ƌ  õĦ/#$%&\'()"+./:;<=>?@[]^`{|}~\\,', null, ''].forEach(text => {
+        QUnit.test(`grandTotal text = ${text}`, function(assert) {
+            const pivotGrid = $('#pivotGrid').dxPivotGrid({
+                texts: { grandTotal: text },
+                dataSource: {
+                    store: [ { r1: 'r1_1', c1: 'c1_1' } ]
+                }
+            }).dxPivotGrid('instance');
+
+            const done = assert.async();
+            exportPivotGrid({ component: pivotGrid, worksheet: this.worksheet }).then(() => {
+                assert.equal(this.worksheet.getCell('B1').value, text);
+                assert.equal(this.worksheet.getCell('A2').value, text);
+                done();
+            });
+        });
+
+        QUnit.test(`total text = ${text}`, function(assert) {
+            const pivotGrid = $('#pivotGrid').dxPivotGrid({
+                texts: { total: text },
+                dataSource: {
+                    fields: [
+                        { area: 'row', dataField: 'r1', dataType: 'string', expanded: true },
+                        { area: 'row', dataField: 'r2', dataType: 'string', expanded: true },
+                        { area: 'column', dataField: 'c1', dataType: 'string', expanded: true },
+                        { area: 'column', dataField: 'c2', dataType: 'string', expanded: true },
+                        { area: 'data', summaryType: 'sum', dataField: 'value', dataType: 'number', showGrandTotals: false, showTotals: true }
+                    ],
+                    store: [
+                        { r1: 'r1_1', r2: 'r2_1', c1: 'c1_1', c2: 'c2_1', value: 1 }
+                    ]
+                }
+            }).dxPivotGrid('instance');
+
+            const done = assert.async();
+            exportPivotGrid({ component: pivotGrid, worksheet: this.worksheet }).then(() => {
+                assert.equal(this.worksheet.getCell('A4').value, text === null ? '' : text);
+                assert.equal(this.worksheet.getCell('B4').value, text === null ? '' : text);
+                done();
+            });
+        });
+    });
+
+    [undefined, 'currency', 'fixedPoint', '#.##', { type: 'currency', currency: 'RUB' }, { type: 'billions', precision: 3 }].forEach(format => {
+        QUnit.test(`dataNotAvailable text. format = ${format}`, function(assert) {
+            const userDefinedText = 'any text';
+            const pivotGrid = $('#pivotGrid').dxPivotGrid({
+                texts: { dataNotAvailable: userDefinedText },
+                dataSource: {
+                    fields: [
+                        { area: 'column' },
+                        { area: 'data', format: format }
+                    ],
+                    values: [[ DataController.__internals.NO_DATA_AVAILABLE_TEXT ]]
+                },
+            }).dxPivotGrid('instance');
+
+            const done = assert.async();
+            const expectedText = format === undefined ? userDefinedText : DataController.__internals.NO_DATA_AVAILABLE_TEXT;
+            exportPivotGrid({ component: pivotGrid, worksheet: this.worksheet }).then(() => {
+                assert.equal(this.worksheet.getCell('B2').value, expectedText);
+                done();
+            });
+        });
     });
 });
 

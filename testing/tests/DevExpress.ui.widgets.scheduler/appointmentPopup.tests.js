@@ -260,6 +260,27 @@ QUnit.module('Appointment popup form', moduleConfig, () => {
         assert.deepEqual(scheduler.appointmentForm.getEditor('endDate').option('value'), data.endDate);
     });
 
+    QUnit.test('onAppointmentFormOpening event should pass e.popup argument', function(assert) {
+        const data = [{
+            text: 'Website Re-Design Plan',
+            startDate: new Date(2017, 4, 22, 9, 30),
+            endDate: new Date(2017, 4, 22, 11, 30)
+        }];
+
+        const scheduler = createScheduler({
+            dataSource: data,
+            onAppointmentFormOpening: (e) => {
+                assert.equal(e.popup.NAME, 'dxPopup', 'e.popup should be instance of dxPopup');
+
+                e.popup.option('showTitle', true);
+                e.popup.option('title', 'Information');
+            }
+        });
+
+        scheduler.appointments.dblclick();
+        assert.equal(scheduler.appointmentPopup.getPopupTitleElement().length, 1, 'title should be visible, after set dxPopup property on onAppointmentFormOpening');
+    });
+
     QUnit.test('onAppointmentFormOpening event should handle e.cancel value', function(assert) {
         const data = [{
             text: 'Website Re-Design Plan',
@@ -341,7 +362,7 @@ QUnit.module('Appointment popup form', moduleConfig, () => {
         assert.equal(appointmentPopup.form.getSubject(), defaultData[0].text, 'Subject in form should equal selected appointment');
     });
 
-    QUnit.test('Recurrence repeat-type editor should have default \'never\' value after reopening appointment popup', function(assert) {
+    QUnit.test('Recurrence repeat-end editor should have default \'never\' value after reopening appointment popup', function(assert) {
         const firstAppointment = { startDate: new Date(2015, 1, 9), endDate: new Date(2015, 1, 9, 1), text: 'caption 1' };
         const secondAppointment = { startDate: new Date(2015, 1, 9), endDate: new Date(2015, 1, 9, 1), text: 'caption 2' };
         const scheduler = createScheduler();
@@ -352,8 +373,8 @@ QUnit.module('Appointment popup form', moduleConfig, () => {
         let visibilityChanged = form.getEditor('visibilityChanged');
         visibilityChanged.option('value', true);
 
-        const repeatTypeEditor = form.getEditor('recurrenceRule')._repeatTypeEditor;
-        repeatTypeEditor.option('value', 'count');
+        const repeatEndEditor = form.getEditor('recurrenceRule').getEditorByField('repeatEnd');
+        repeatEndEditor.option('value', 'count');
         scheduler.appointmentPopup.clickDoneButton();
 
         scheduler.instance.showAppointmentPopup(secondAppointment);
@@ -361,7 +382,7 @@ QUnit.module('Appointment popup form', moduleConfig, () => {
         visibilityChanged = form.getEditor('visibilityChanged');
         visibilityChanged.option('value', true);
 
-        assert.strictEqual(repeatTypeEditor.option('value'), 'never', 'Repeat-type editor value is ok');
+        assert.strictEqual(repeatEndEditor.option('value'), 'never', 'Repeat-type editor value is ok');
     });
 
     QUnit.test('Update appointment if CustomStore', function(assert) {
@@ -666,7 +687,7 @@ QUnit.test('hideAppointmentPopup should hide a popup and save changes', function
 QUnit.test('showAppointmentPopup should render a popup form only once', function(assert) {
     this.instance.showAppointmentPopup({ startDate: new Date(2015, 1, 1), endDate: new Date(2015, 1, 2), text: 'appointment 1' });
 
-    const $form = $('.dx-scheduler-appointment-popup').find('.dx-form');
+    const $form = $('.dx-scheduler-appointment-popup').find('.dx-form').not('.dx-recurrence-editor-container');
     assert.equal($form.length, 1, 'Form was rendered');
 
     this.instance.hideAppointmentPopup();
@@ -874,7 +895,7 @@ QUnit.test('Recurrence Editor should have right freq editor value if recurrence 
 
     const form = this.instance.getAppointmentDetailsForm();
     const recurrenceEditor = form.getEditor('recurrenceRule');
-    const freqEditor = recurrenceEditor._freqEditor;
+    const freqEditor = recurrenceEditor.getEditorByField('freq');
 
     assert.equal(freqEditor.option('value'), 'weekly', 'value is right');
 });
@@ -906,7 +927,7 @@ QUnit.test('Recurrence editor should change value if freq editor value changed',
 
     const form = this.instance.getAppointmentDetailsForm();
     const recurrenceEditor = form.getEditor('recurrenceRule');
-    const freqEditor = recurrenceEditor._freqEditor;
+    const freqEditor = recurrenceEditor.getEditorByField('freq');
 
     freqEditor.option('value', 'daily');
 

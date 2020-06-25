@@ -14,56 +14,25 @@ import {
 } from 'devextreme-generator/component_declaration/common';
 import '../events/click';
 import '../events/hover';
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { h } from 'preact';
 import {
   active, dxClick, focus, hover, keyboard, resize, visibility,
 } from '../events/short';
-import { each } from '../core/utils/iterator';
 import { extend } from '../core/utils/extend';
 import { focusable } from '../ui/widget/selectors';
-import { isFakeClickEvent } from '../events/utils';
+import { isFakeClickEvent } from '../events/utils/index';
 import BaseWidgetProps from './utils/base-props';
 
-const getStyles = ({ width, height, style }) => {
-  const computedWidth = typeof width === 'function' ? width() : width;
-  const computedHeight = typeof height === 'function' ? height() : height;
-
-  return {
-    height: computedHeight ?? undefined,
-    width: computedWidth ?? undefined,
-    ...style,
-  };
-};
-
-const setAttribute = (name, value) => {
-  const result = {};
-
-  if (value) {
-    const attrName = (name === 'role' || name === 'id') ? name : `aria-${name}`;
-
-    result[attrName] = String(value);
+const getAria = (args): { [name: string]: string } => Object.keys(args).reduce((r, key) => {
+  if (args[key]) {
+    return {
+      ...r,
+      [(key === 'role' || key === 'id') ? key : `aria-${key}`]: String(args[key]),
+    };
   }
-
-  return result;
-};
-
-const getAria = (args) => {
-  let attrs = {};
-
-  each(args, (name, value) => {
-    attrs = { ...attrs, ...setAttribute(name, value) };
-  });
-
-  return attrs;
-};
-
-const getAttributes = ({ elementAttr, accessKey }) => {
-  const attrs = extend({}, elementAttr, accessKey && { accessKey });
-
-  delete attrs.class;
-
-  return attrs;
-};
+  return r;
+}, {});
 
 const getCssClasses = (model: Partial<Widget> & Partial<WidgetProps>) => {
   const className = ['dx-widget'];
@@ -79,7 +48,6 @@ const getCssClasses = (model: Partial<Widget> & Partial<WidgetProps>) => {
   model.hovered && isHoverable && !model.active && className.push('dx-state-hover');
   model.rtlEnabled && className.push('dx-rtl');
   model.onVisibilityChange && className.push('dx-visibility-change-handler');
-  model.elementAttr?.class && className.push(model.elementAttr.class);
 
   return className.join(' ');
 };
@@ -93,7 +61,6 @@ export const viewFunction = (viewModel: Widget) => (
     hidden={!viewModel.props.visible}
     className={viewModel.cssClasses}
     style={viewModel.styles}
-    {...viewModel.restAttributes} // eslint-disable-line react/jsx-props-no-spreading
   >
     {viewModel.props.children}
   </div>
@@ -126,8 +93,6 @@ export class WidgetProps extends BaseWidgetProps {
   @Event() onKeyboardHandled?: (args: any) => any | undefined;
 
   @Event() onVisibilityChange?: (args: boolean) => undefined;
-
-  @OneWay() style?: { [name: string]: any };
 }
 
 @Component({
@@ -307,27 +272,31 @@ export default class Widget extends JSXComponent(WidgetProps) {
 
   get attributes() {
     const {
-      accessKey,
       aria,
       disabled,
-      elementAttr,
       focusStateEnabled,
       visible,
     } = this.props;
 
-    const arias = getAria({ ...aria, disabled, hidden: !visible });
-    const attrsWithoutClass = getAttributes({
-      accessKey: focusStateEnabled && !disabled && accessKey,
-      elementAttr,
-    });
-
-    return { ...attrsWithoutClass, ...arias };
+    const accessKey = focusStateEnabled && !disabled && this.props.accessKey;
+    return {
+      ...extend({}, this.restAttributes, accessKey && { accessKey }),
+      ...getAria({ ...aria, disabled, hidden: !visible }),
+    };
   }
 
   get styles() {
-    const { width, height, style } = this.props;
+    const { width, height } = this.props;
+    const style = this.restAttributes.style || {};
 
-    return getStyles({ width, height, style });
+    const computedWidth = typeof width === 'function' ? width() : width;
+    const computedHeight = typeof height === 'function' ? height() : height;
+
+    return {
+      ...style,
+      height: computedHeight ?? style.height,
+      width: computedWidth ?? style.width,
+    };
   }
 
   get cssClasses() {
@@ -335,7 +304,6 @@ export default class Widget extends JSXComponent(WidgetProps) {
       classes,
       className,
       disabled,
-      elementAttr,
       focusStateEnabled,
       hoverStateEnabled,
       onVisibilityChange,
@@ -350,7 +318,6 @@ export default class Widget extends JSXComponent(WidgetProps) {
       className,
       classes,
       disabled,
-      elementAttr,
       focusStateEnabled,
       hoverStateEnabled,
       onVisibilityChange,
